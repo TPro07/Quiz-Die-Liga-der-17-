@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Die Liga der 17 – Quiz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(120deg, #0e1830 0%, #1c3668 100%);
+      color: #f5f7fa;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    /* Animierter Farbverlauf */
+    body::before {
+      content: "";
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: linear-gradient(120deg, #0e1830 0%, #1c3668 100%, #0c1122 80%);
+      z-index: 0;
+      animation: bgMove 30s ease-in-out infinite alternate;
+    }
+    @keyframes bgMove {
+      0% {background-position: 0 0;}
+      100% {background-position: 100vw 0;}
+    }
+    /* SVG-Blitze als Hintergrund */
+    #blitz-bg {
+      pointer-events: none;
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      z-index: 1;
+      opacity: 0.23;
+      mix-blend-mode: lighten;
+      filter: blur(0.5px) brightness(1.3);
+    }
+    .blitz-anim {
+      display: block;
+      margin: 0 auto 18px auto;
+      width: 60px; height: 60px;
+      filter: drop-shadow(0 0 18px #ffe066) drop-shadow(0 0 10px #19e3ff);
+      animation: blitzflicker 1.2s infinite;
+      z-index: 2;
+      position: relative;
+    }
+    @keyframes blitzflicker {
+      0%, 100% { opacity: 1; filter: drop-shadow(0 0 18px #ffe066);}
+      80% {opacity: 0.7;}
+      85% {opacity: 1; filter: drop-shadow(0 0 32px #fff700);}
+      90% {opacity: 0.5;}
+      95% {opacity: 1; filter: drop-shadow(0 0 10px #19e3ff);}
+    }
+    h1 {
+      text-align: center;
+      color: #ffe066;
+      text-shadow:
+        0 0 20px #f8e287,
+        0 0 40px #fff700,
+        0 0 10px #f4faff;
+      font-size: 2.3em;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 3;
+    }
+    .frage {
+      background: rgba(20,32,64,0.92);
+      border: 2.5px solid #ffe066;
+      border-radius: 14px;
+      padding: 22px 15px 13px 15px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 22px 0 rgba(255,255,0,0.11), 0 0 26px 0 #19e3ff44;
+      position: relative;
+      z-index: 4;
+      backdrop-filter: blur(1.5px);
+    }
+    .frage h2 {
+      color: #ffe066;
+      margin-bottom: 14px;
+      text-shadow: 0 0 8px #ffe06644;
+      font-size: 1.13em;
+    }
+    .antwort {
+      display: block;
+      width: 100%;
+      margin: 12px 0;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1.7px solid #19e3ff;
+      background: rgba(8,24,56,0.90);
+      color: #f5f7fa;
+      font-size: 1.08em;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.18s, border-color 0.18s, box-shadow 0.18s;
+      text-align: left;
+      box-shadow: 0 0 0px 0 #19e3ff;
+      position: relative;
+      z-index: 5;
+    }
+    .antwort:hover, .antwort:focus {
+      background: #11284b;
+      border-color: #ffe066;
+      box-shadow: 0 0 16px 3px #19e3ff99, 0 0 9px 1px #ffe06699;
+      outline: none;
+    }
+    .richtig {
+      background: #1fcf4f !important;
+      border-color: #ffe066 !important;
+      color: #fff700 !important;
+      font-weight: bold;
+      box-shadow: 0 0 30px 5px #ffe066bb, 0 0 12px 2px #19e3ff;
+      position: relative;
+    }
+    .richtig::after {
+      content: "⚡";
+      font-size: 1.4em;
+      position: absolute;
+      right: 14px; top: 7px;
+      filter: drop-shadow(0 0 4px #ffe066);
+      animation: blitzflash 0.6s;
+    }
+    @keyframes blitzflash {
+      0% {opacity:0.1;}
+      20% {opacity:1;}
+      100% {opacity:0.8;}
+    }
+    .falsch {
+      background: #ed3541 !important;
+      border-color: #ffe066 !important;
+      color: #ffe066 !important;
+      box-shadow: 0 0 10px 2px #ed354199;
+    }
+    .feedback {
+      margin-top: 9px;
+      font-style: italic;
+      font-size: 1.08em;
+      letter-spacing: 0.01em;
+      text-shadow: 0 0 10px #ffe06655;
+      color: #ffe066;
+    }
+    #score {
+      font-size: 1.3em;
+      text-align: center;
+      margin: 24px 0 0 0;
+      color: #ffe066;
+      text-shadow: 0 0 12px #19e3ff, 0 0 4px #ffe066;
+      font-weight: bold;
+      z-index: 8;
+      position: relative;
+    }
+    @media (max-width: 600px) {
+      body { padding: 3px;}
+      .frage { padding: 10px; }
+      .antwort { font-size: 1em; padding: 10px;}
+      .blitz-anim { width: 42px; height: 42px;}
+    }
+  </style>
+</head>
+<body>
+  <!-- Blitz-Hintergrund (SVG, animiert mit JS) -->
+  <svg id="blitz-bg"></svg>
+  <!-- Animierter Blitz-Icon -->
+  <svg class="blitz-anim" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><polygon points="36,4 72,36 48,36 62,76 10,42 34,42 18,4" fill="#ffe066" stroke="#19e3ff" stroke-width="3" /></svg>
+  
+  <h1>Die Liga der 17 – Quiz</h1>
+  <div id="quiz"></div>
+  <div id="score"></div>
+  <script>
+    // Dynamische Blitze im Hintergrund
+    function drawLightning(svg, width, height, bolts = 6) {
+      svg.innerHTML = '';
+      for(let i=0; i<bolts; i++) {
+        let x = Math.random()*width*0.9 + width*0.05;
+        let y = 0;
+        let path = `M${x},${y}`;
+        let segments = Math.floor(Math.random()*4)+6;
+        let x0 = x, y0 = y;
+        for(let j=0; j<segments; j++) {
+          x0 += (Math.random()-0.5)*25;
+          y0 += height/segments * (0.85+Math.random()*0.3);
+          path += ` L${x0},${y0}`;
+        }
+        let lightning = document.createElementNS("http://www.w3.org/2000/svg","path");
+        lightning.setAttribute("d", path);
+        lightning.setAttribute("stroke", "#ffe066");
+        lightning.setAttribute("stroke-width", Math.random()*2.2+1.1);
+        lightning.setAttribute("fill", "none");
+        lightning.setAttribute("opacity", Math.random()*0.5+0.4);
+        lightning.setAttribute("filter", "url(#glow)");
+        svg.appendChild(lightning);
+      }
+    }
+    function animateLightning() {
+      const svg = document.getElementById('blitz-bg');
+      let width = window.innerWidth, height = window.innerHeight;
+      svg.setAttribute('width', width);
+      svg.setAttribute('height', height);
+      svg.innerHTML = `<defs>
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="5" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>`;
+      drawLightning(svg, width, height, Math.floor(Math.random()*2)+6);
+    }
+    animateLightning();
+    setInterval(animateLightning, 1300);
+    window.addEventListener('resize', animateLightning);
+
+    // Quiz
+    const fragen = [
+      {
+        frage: "1. Wann ist das Buch ins Deutsche erschienen?",
+        antworten: ["2010", "2013", "2016"],
+        richtig: "2013"
+      },
+      {
+        frage: "2. Wie viele Seiten hat das Buch?",
+        antworten: ["250 Seiten", "383 Seiten", "412 Seiten"],
+        richtig: "383 Seiten"
+      },
+      {
+        frage: "3. Wie heißt der Autor?",
+        antworten: ["Andreas Steinhöfel", "Rick Riordan", "Richard Paul Evans"],
+        richtig: "Richard Paul Evans"
+      },
+      {
+        frage: "4. Wie viele Bände gibt es insgesamt?",
+        antworten: ["7 Bände", "10 Bände", "12 Bände"],
+        richtig: "10 Bände"
+      },
+      {
+        frage: "5. Wie heißt der beste Freund von Michael?",
+        antworten: ["Nick", "Ben", "Ostin"],
+        richtig: "Ostin"
+      }
+    ];
+
+    let punkte = 0;
+    let beantwortet = 0;
+
+    function zeigeQuiz() {
+      const quizDiv = document.getElementById('quiz');
+      quizDiv.innerHTML = '';
+      fragen.forEach((f, idx) => {
+        const frageDiv = document.createElement('div');
+        frageDiv.className = 'frage';
+        frageDiv.innerHTML = `<h2>${f.frage}</h2>`;
+        const feedback = document.createElement('div');
+        feedback.className = 'feedback';
+        for (const antwort of f.antworten) {
+          const button = document.createElement('button');
+          button.className = 'antwort';
+          button.type = 'button';
+          button.textContent = antwort;
+          button.setAttribute('aria-label', antwort);
+          button.onclick = function () {
+            if (frageDiv.classList.contains('beantwortet')) return;
+            frageDiv.classList.add('beantwortet');
+            beantwortet++;
+            if (antwort === f.richtig) {
+              button.classList.add('richtig');
+              feedback.textContent = '⚡ Richtig!';
+              punkte++;
+            } else {
+              button.classList.add('falsch');
+              feedback.textContent = '❌ Falsch – die richtige Antwort war: ' + f.richtig;
+              // richtige Antwort hervorheben
+              Array.from(frageDiv.querySelectorAll('.antwort')).forEach(btn => {
+                if (btn.textContent.trim() === f.richtig) {
+                  btn.classList.add('richtig');
+                }
+              });
+            }
+            if (beantwortet === fragen.length) {
+              zeigeScore();
+            }
+          };
+          frageDiv.appendChild(button);
+        }
+        frageDiv.appendChild(feedback);
+        quizDiv.appendChild(frageDiv);
+      });
+    }
+
+    function zeigeScore() {
+      document.getElementById('score').textContent = `Du hast ${punkte} von ${fragen.length} Fragen richtig beantwortet! ⚡`;
+    }
+
+    zeigeQuiz();
+  </script>
+</body>
+</html>
